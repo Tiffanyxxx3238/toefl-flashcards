@@ -22,7 +22,6 @@
     align-items: center; padding: 20px 16px 110px; user-select: none;
   }
 
-  /* Header */
   #header { width:100%; max-width:560px; margin-bottom:20px; }
   #progress-row { display:flex; align-items:center; gap:10px; margin-bottom:5px; }
   #progress-text { font-size:11px; color:var(--ink-muted); letter-spacing:.04em; white-space:nowrap; min-width:80px; }
@@ -33,7 +32,6 @@
   #sync-dot { width:6px; height:6px; border-radius:50%; background:var(--ink-faint); transition:background .3s; flex-shrink:0; }
   #sync-dot.syncing{background:#f39c12;} #sync-dot.synced{background:var(--good);} #sync-dot.error{background:var(--again);}
 
-  /* Card */
   #scene { width:100%; max-width:560px; height:var(--card-h); perspective:1200px; cursor:pointer; margin-bottom:18px; }
   #card { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.4,0,.2,1); }
   #card.flipped { transform:rotateY(180deg); }
@@ -43,29 +41,37 @@
     box-shadow:0 2px 0 #d8d3cc, 0 8px 32px rgba(0,0,0,.07); overflow:hidden;
   }
 
-  /* ── FRONT ── */
+  /* FRONT */
   .face.front { display:flex; flex-direction:column; }
 
-  /* Image area — canvas-based gradient, always visible */
+  /* ── Gradient banner — pure CSS, always works ── */
   #img-area {
     width:100%; height:190px; flex-shrink:0;
     position:relative; overflow:hidden;
   }
-  #img-canvas {
-    position:absolute; inset:0; width:100%; height:100%;
-    display:block;
+  #img-gradient {
+    position:absolute; inset:0;
+    background: linear-gradient(135deg, #667eea, #764ba2); /* overridden by JS */
+    display:flex; align-items:center; justify-content:center;
   }
-  #img-el {
-    position:absolute; inset:0; width:100%; height:100%;
-    object-fit:cover; opacity:0; transition:opacity .6s;
+  #img-watermark {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style:italic; font-weight:300;
+    color:rgba(255,255,255,0.22);
+    font-size:clamp(24px,5vw,48px);
+    pointer-events:none; user-select:none;
+    text-align:center; padding:0 16px;
   }
-  #img-el.show { opacity:1; }
+  #img-photo {
+    position:absolute; inset:0;
+    width:100%; height:100%; object-fit:cover;
+    opacity:0; transition:opacity .7s ease;
+  }
+  #img-photo.show { opacity:1; }
 
-  /* Word area */
   #front-bottom {
     flex:1; display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    padding:18px 28px 14px;
+    align-items:center; justify-content:center; padding:18px 28px 14px;
   }
   #word-display {
     font-family:'Fraunces',serif; font-size:clamp(1.9rem,6.5vw,3.1rem);
@@ -75,15 +81,15 @@
 
   #speak-btn {
     position:absolute; top:196px; right:14px; width:34px; height:34px;
-    border:1.5px solid rgba(255,255,255,0.7); border-radius:50%;
-    background:rgba(255,255,255,0.85); backdrop-filter:blur(4px);
+    border:1.5px solid rgba(255,255,255,0.8); border-radius:50%;
+    background:rgba(255,255,255,0.88); backdrop-filter:blur(4px);
     cursor:pointer; display:flex; align-items:center; justify-content:center;
     color:var(--ink-muted); font-size:14px; z-index:3;
     transition:border-color .2s, color .2s;
   }
   #speak-btn:hover, #speak-btn.speaking { border-color:var(--ink); color:var(--ink); }
 
-  /* ── BACK ── */
+  /* BACK */
   .face.back {
     transform:rotateY(180deg);
     display:flex; flex-direction:column; align-items:flex-start;
@@ -96,91 +102,46 @@
     color:var(--ink-muted); font-size:14px; transition:border-color .2s,color .2s;
   }
   #speak-btn-back:hover, #speak-btn-back.speaking { border-color:var(--ink); color:var(--ink); }
-
-  #back-word {
-    font-family:'Fraunces',serif; font-size:1.6rem; font-weight:300;
-    margin-bottom:14px; padding-right:44px; line-height:1.2;
-  }
+  #back-word { font-family:'Fraunces',serif; font-size:1.6rem; font-weight:300; margin-bottom:14px; padding-right:44px; }
   .def-row { display:flex; gap:10px; margin-bottom:10px; width:100%; }
-  .pos-tag {
-    font-size:10px; color:var(--ink-faint); border:1px solid var(--ink-faint);
-    padding:2px 5px; border-radius:4px; white-space:nowrap;
-    height:fit-content; margin-top:2px; letter-spacing:.04em; flex-shrink:0;
-  }
+  .pos-tag { font-size:10px; color:var(--ink-faint); border:1px solid var(--ink-faint); padding:2px 5px; border-radius:4px; white-space:nowrap; height:fit-content; margin-top:2px; letter-spacing:.04em; flex-shrink:0; }
   .def-text { font-size:13px; color:var(--ink); line-height:1.6; }
   .en-hint-text { font-size:10px; color:var(--ink-muted); font-style:italic; margin-top:2px; line-height:1.4; }
 
-  /* Example */
-  .example-wrap {
-    width:100%; margin-top:12px; padding-top:12px;
-    border-top:1px solid #e5e0d8;
-  }
+  .example-wrap { width:100%; margin-top:12px; padding-top:12px; border-top:1px solid #e5e0d8; }
   .example-label { font-size:9px; color:var(--ink-faint); letter-spacing:.08em; text-transform:uppercase; margin-bottom:6px; }
-  .example-en {
-    font-size:12.5px; color:var(--ink); line-height:1.65;
-    font-style:italic; cursor:pointer;
-  }
-  .example-zh {
-    font-size:11.5px; color:var(--ink-muted); line-height:1.55;
-    margin-top:6px; padding:6px 10px; background:#ede9e1;
-    border-radius:6px; display:none;
-  }
+  .example-en { font-size:12.5px; color:var(--ink); line-height:1.65; font-style:italic; cursor:pointer; }
+  .example-zh { font-size:11.5px; color:var(--ink-muted); line-height:1.55; margin-top:6px; padding:6px 10px; background:#ede9e1; border-radius:6px; display:none; }
   .example-zh.visible { display:block; }
-  .reveal-hint {
-    font-size:9px; color:var(--ink-faint); margin-top:4px;
-    display:inline-block; transition:opacity .2s;
-  }
+  .reveal-hint { font-size:9px; color:var(--ink-faint); margin-top:4px; display:inline-block; transition:opacity .2s; }
 
-  /* Generating */
-  .gen-indicator {
-    display:flex; align-items:center; gap:5px;
-    margin-top:12px; padding-top:12px; border-top:1px solid #e5e0d8;
-    font-size:11px; color:var(--ink-faint); font-style:italic;
-  }
+  .gen-indicator { display:flex; align-items:center; gap:5px; margin-top:12px; padding-top:12px; border-top:1px solid #e5e0d8; font-size:11px; color:var(--ink-faint); font-style:italic; }
   .gen-dot { width:4px; height:4px; border-radius:50%; background:var(--ink-faint); animation:pulse 1.2s infinite; }
   .gen-dot:nth-child(2){animation-delay:.2s;} .gen-dot:nth-child(3){animation-delay:.4s;}
   @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 
-  /* Actions */
   #actions { width:100%; max-width:560px; display:none; gap:8px; margin-bottom:16px; }
   #actions.visible { display:flex; }
-  .act-btn {
-    flex:1; height:50px; border:none; border-radius:10px; cursor:pointer;
-    font-family:'DM Mono',monospace; font-size:18px; font-weight:400;
-    display:flex; align-items:center; justify-content:center; transition:transform .12s;
-  }
-  .act-btn:active { transform:scale(.95); }
+  .act-btn { flex:1; height:50px; border:none; border-radius:10px; cursor:pointer; font-family:'DM Mono',monospace; font-size:18px; font-weight:400; display:flex; align-items:center; justify-content:center; transition:transform .12s; }
+  .act-btn:active{transform:scale(.95);}
   #btn-again{background:var(--again-bg);color:var(--again);}
-  #btn-hard {background:var(--hard-bg); color:var(--hard); }
-  #btn-good {background:var(--good-bg); color:var(--good); }
-  #btn-easy {background:var(--easy-bg); color:var(--easy); }
+  #btn-hard {background:var(--hard-bg);color:var(--hard);}
+  #btn-good {background:var(--good-bg);color:var(--good);}
+  #btn-easy {background:var(--easy-bg);color:var(--easy);}
 
-  /* Stats */
   #stats { width:100%; max-width:560px; display:flex; gap:8px; }
   .stat-cell { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
-  .stat-num { font-size:17px; }
+  .stat-num{font-size:17px;}
   #stat-again .stat-num{color:var(--again);}#stat-hard .stat-num{color:var(--hard);}
   #stat-good .stat-num{color:var(--good);}#stat-easy .stat-num{color:var(--easy);}
   .stat-label{font-size:9px;color:var(--ink-faint);letter-spacing:.06em;text-transform:uppercase;}
 
-  /* Shortcuts */
-  #shortcuts {
-    position:fixed; bottom:14px; right:14px; background:var(--surface);
-    border:1px solid #e0dbd3; border-radius:10px; padding:9px 13px;
-    font-size:10px; color:var(--ink-muted); line-height:1.85;
-    box-shadow:0 2px 12px rgba(0,0,0,.07); z-index:100;
-  }
-  #shortcuts b { color:var(--ink); }
-
-  /* Loading */
-  #loading {
-    position:fixed; inset:0; background:var(--bg); z-index:200;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:12px; transition:opacity .5s;
-  }
-  #loading.hidden { opacity:0; pointer-events:none; }
-  #loading-word { font-family:'Fraunces',serif; font-size:2.2rem; font-weight:300; }
-  #loading-sub  { font-size:11px; color:var(--ink-faint); letter-spacing:.06em; }
+  #shortcuts{position:fixed;bottom:14px;right:14px;background:var(--surface);border:1px solid #e0dbd3;border-radius:10px;padding:9px 13px;font-size:10px;color:var(--ink-muted);line-height:1.85;box-shadow:0 2px 12px rgba(0,0,0,.07);z-index:100;}
+  #shortcuts b{color:var(--ink);}
+  #loading{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .5s;}
+  #loading.hidden{opacity:0;pointer-events:none;}
+  #loading-word{font-family:'Fraunces',serif;font-size:2.2rem;font-weight:300;}
+  #loading-sub{font-size:11px;color:var(--ink-faint);letter-spacing:.06em;}
 </style>
 </head>
 <body>
@@ -201,12 +162,12 @@
 
 <div id="scene" onclick="handleCardClick(event)">
   <div id="card">
-
-    <!-- FRONT -->
     <div class="face front">
       <div id="img-area">
-        <canvas id="img-canvas"></canvas>
-        <img id="img-el" alt="" />
+        <div id="img-gradient">
+          <div id="img-watermark"></div>
+        </div>
+        <img id="img-photo" alt="" />
       </div>
       <div id="front-bottom">
         <div id="word-display">—</div>
@@ -214,15 +175,12 @@
       </div>
       <button id="speak-btn" onclick="event.stopPropagation();speakCurrent()" title="朗讀 (5/G)">🔊</button>
     </div>
-
-    <!-- BACK -->
     <div class="face back">
       <button id="speak-btn-back" onclick="event.stopPropagation();speakCurrent()" title="朗讀 (5/G)">🔊</button>
       <div id="back-word">—</div>
       <div id="definitions"></div>
       <div id="example-area"></div>
     </div>
-
   </div>
 </div>
 
@@ -235,9 +193,9 @@
 
 <div id="stats">
   <div class="stat-cell" id="stat-again"><div class="stat-num" id="cnt-again">0</div><div class="stat-label">Again</div></div>
-  <div class="stat-cell" id="stat-hard"> <div class="stat-num" id="cnt-hard">0</div> <div class="stat-label">Hard</div></div>
-  <div class="stat-cell" id="stat-good"> <div class="stat-num" id="cnt-good">0</div> <div class="stat-label">Good</div></div>
-  <div class="stat-cell" id="stat-easy"> <div class="stat-num" id="cnt-easy">0</div> <div class="stat-label">Easy</div></div>
+  <div class="stat-cell" id="stat-hard"><div class="stat-num" id="cnt-hard">0</div><div class="stat-label">Hard</div></div>
+  <div class="stat-cell" id="stat-good"><div class="stat-num" id="cnt-good">0</div><div class="stat-label">Good</div></div>
+  <div class="stat-cell" id="stat-easy"><div class="stat-num" id="cnt-easy">0</div><div class="stat-label">Easy</div></div>
 </div>
 
 <div id="shortcuts">
@@ -275,7 +233,7 @@ let queue=[], currentIdx=0, isFlipped=false;
 let stats={again:0,hard:0,good:0,easy:0};
 let saveTimeout=null, exampleCache={};
 
-// ── Canvas gradient — 20 beautiful palettes ──
+// ── 20 CSS gradient palettes ──
 const PALETTES = [
   ["#667eea","#764ba2"], ["#f093fb","#f5576c"], ["#4facfe","#00f2fe"],
   ["#43e97b","#38f9d7"], ["#fa709a","#fee140"], ["#a18cd1","#fbc2eb"],
@@ -283,7 +241,7 @@ const PALETTES = [
   ["#26c6da","#00acc1"], ["#ab47bc","#7b1fa2"], ["#66bb6a","#388e3c"],
   ["#ef5350","#b71c1c"], ["#42a5f5","#1565c0"], ["#ffca28","#ff8f00"],
   ["#ec407a","#880e4f"], ["#7e57c2","#4527a0"], ["#26a69a","#004d40"],
-  ["#8d6e63","#4e342e"], ["#78909c","#37474f"],
+  ["#8d6e63","#4e342e"], ["#78909c","#455a64"],
 ];
 
 function wordHash(word) {
@@ -292,66 +250,33 @@ function wordHash(word) {
   return Math.abs(h);
 }
 
-const canvas = document.getElementById('img-canvas');
-const ctx    = canvas.getContext('2d');
-
-function drawGradient(word) {
-  const area = document.getElementById('img-area');
-  const W = area.offsetWidth || 560;
-  const H = 190;
-  canvas.width  = W;
-  canvas.height = H;
-
+// ── Set CSS gradient immediately (no canvas, no timing issues) ──
+function setGradient(word) {
   const pair = PALETTES[wordHash(word) % PALETTES.length];
-  const grad = ctx.createLinearGradient(0, 0, W, H);
-  grad.addColorStop(0, pair[0]);
-  grad.addColorStop(1, pair[1]);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, H);
-
-  // Draw word as watermark text
-  ctx.fillStyle = 'rgba(255,255,255,0.18)';
-  ctx.font = `italic ${Math.min(52, W/6)}px Georgia, serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(word, W/2, H/2);
+  document.getElementById('img-gradient').style.background =
+    `linear-gradient(135deg, ${pair[0]} 0%, ${pair[1]} 100%)`;
+  document.getElementById('img-watermark').textContent = word;
 }
 
-// Try loading a real photo; keep gradient as fallback
+// ── Try loading Picsum photo on top ──
 const imgStatus = {};
-function loadCardImage(word) {
-  const imgEl = document.getElementById('img-el');
-  imgEl.classList.remove('show');
+function loadPhoto(word) {
+  const photo = document.getElementById('img-photo');
+  photo.classList.remove('show');
 
-  drawGradient(word); // always draw gradient first — instant
-
-  if (imgStatus[word] === 'ok') {
-    // Already loaded before — restore src and show
-    imgEl.src = imgEl.dataset.src || '';
-    imgEl.classList.add('show');
-    return;
+  if (imgStatus[word] === 'fail') return;
+  if (imgStatus[word] === 'ok' && photo.dataset.word === word) {
+    photo.classList.add('show'); return;
   }
-  if (imgStatus[word] === 'fail') return; // keep gradient
 
-  // Try Picsum then fallback
   const seed = wordHash(word) % 1000;
-  const urls = [
-    `https://picsum.photos/seed/${seed}/560/190`,
-    `https://picsum.photos/seed/${seed+1}/560/190`,
-  ];
-  let idx = 0;
-  function tryNext() {
-    if (idx >= urls.length) { imgStatus[word]='fail'; return; }
-    const url = urls[idx++];
-    imgEl.onload = () => {
-      imgEl.dataset.src = url;
-      imgStatus[word] = 'ok';
-      if (currentWord()?.word === word) imgEl.classList.add('show');
-    };
-    imgEl.onerror = tryNext;
-    imgEl.src = url;
-  }
-  tryNext();
+  photo.onload = () => {
+    photo.dataset.word = word;
+    imgStatus[word] = 'ok';
+    if (currentWord()?.word === word) photo.classList.add('show');
+  };
+  photo.onerror = () => { imgStatus[word] = 'fail'; };
+  photo.src = `https://picsum.photos/seed/${seed}/560/190`;
 }
 
 function preloadAhead(n=3) {
@@ -362,15 +287,14 @@ function preloadAhead(n=3) {
     if (w && !imgStatus[w]) {
       imgStatus[w] = 'loading';
       const img = new Image();
-      const seed = wordHash(w) % 1000;
-      img.onload  = () => { imgStatus[w]='ok'; img.dataset.src=img.src; };
+      img.onload  = () => { imgStatus[w]='ok'; };
       img.onerror = () => { imgStatus[w]='fail'; };
-      img.src = `https://picsum.photos/seed/${seed}/560/190`;
+      img.src = `https://picsum.photos/seed/${wordHash(w)%1000}/560/190`;
     }
   }
 }
 
-// ── Sync ──
+// ── Sync helpers ──
 function setSyncStatus(s,l){document.getElementById('sync-dot').className=s;document.getElementById('sync-label').textContent=l;}
 function lsSave(){try{localStorage.setItem(LS_KEY,JSON.stringify({queue,currentIdx,stats}));}catch(e){}}
 function lsLoad(){
@@ -378,7 +302,7 @@ function lsLoad(){
   return false;
 }
 function saveState(){
-  lsSave();clearTimeout(saveTimeout);setSyncStatus('syncing','同步中…');
+  lsSave(); clearTimeout(saveTimeout); setSyncStatus('syncing','同步中…');
   saveTimeout=setTimeout(async()=>{
     try{await set(ref(db,SAVE_PATH),{queue,currentIdx,stats,updatedAt:Date.now()});setSyncStatus('synced','已同步 ✓');}
     catch(e){setSyncStatus('error','同步失敗（已存本機）');}
@@ -418,7 +342,7 @@ async function generateExample(word,pos,zhDef){
   }catch(e){}return null;
 }
 
-// ── Speak: word + example sentence ──
+// ── Speak word + example ──
 function speakCurrent(){
   const w=currentWord();if(!w)return;
   window.speechSynthesis.cancel();
@@ -427,12 +351,8 @@ function speakCurrent(){
   document.querySelectorAll('#speak-btn,#speak-btn-back').forEach(b=>b.classList.add('speaking'));
   const done=()=>document.querySelectorAll('#speak-btn,#speak-btn-back').forEach(b=>b.classList.remove('speaking'));
   const u1=new SpeechSynthesisUtterance(w.word);u1.lang='en-US';u1.rate=0.85;
-  if(exText){
-    u1.onend=()=>setTimeout(()=>{
-      const u2=new SpeechSynthesisUtterance(exText);u2.lang='en-US';u2.rate=0.85;
-      u2.onend=u2.onerror=done;window.speechSynthesis.speak(u2);
-    },400);
-  }else{u1.onend=u1.onerror=done;}
+  if(exText){u1.onend=()=>setTimeout(()=>{const u2=new SpeechSynthesisUtterance(exText);u2.lang='en-US';u2.rate=0.85;u2.onend=u2.onerror=done;window.speechSynthesis.speak(u2);},400);}
+  else{u1.onend=u1.onerror=done;}
   u1.onerror=done;window.speechSynthesis.speak(u1);
 }
 window.speakCurrent=speakCurrent;
@@ -442,14 +362,14 @@ function currentWord(){return currentIdx<queue.length?ALL_VOCAB[queue[currentIdx
 
 function render(){
   const w=currentWord();if(!w){renderDone();return;}
-
-  // Front
   document.getElementById('word-display').textContent=w.word;
-  loadCardImage(w.word);
+  document.getElementById('back-word').textContent=w.word;
+
+  // Gradient always shows, photo tries to load on top
+  setGradient(w.word);
+  loadPhoto(w.word);
   preloadAhead(3);
 
-  // Back
-  document.getElementById('back-word').textContent=w.word;
   const defEl=document.getElementById('definitions');defEl.innerHTML='';
   w.definitions.forEach(d=>{
     const row=document.createElement('div');row.className='def-row';
@@ -459,7 +379,6 @@ function render(){
   });
   renderExample(w);
 
-  // Progress
   const total=queue.length,done=currentIdx;
   document.getElementById('progress-text').textContent=`${done+1} / ${total}`;
   document.getElementById('progress-bar').style.width=total?(done/total*100).toFixed(1)+'%':'100%';
@@ -471,43 +390,29 @@ function renderExample(w){
   const area=document.getElementById('example-area');
   const key=w.word.replace(/[.#$/\[\]]/g,'_');
   const cached=exampleCache[key];
-  if(cached&&cached.en){
-    showExampleHTML(area,cached.en,cached.zh);
-  }else if(w.example_en){
-    showExampleHTML(area,w.example_en,w.example_zh||'');
-    exampleCache[key]={en:w.example_en,zh:w.example_zh||''};
-  }else{
-    area.innerHTML=`<div class="gen-indicator">
-      <div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div>
-      <span>生成例句中…</span></div>`;
+  if(cached&&cached.en){showExampleHTML(area,cached.en,cached.zh);}
+  else if(w.example_en){showExampleHTML(area,w.example_en,w.example_zh||'');exampleCache[key]={en:w.example_en,zh:w.example_zh||''};}
+  else{
+    area.innerHTML=`<div class="gen-indicator"><div class="gen-dot"></div><div class="gen-dot"></div><div class="gen-dot"></div><span>生成例句中…</span></div>`;
     const d=w.definitions[0];
     generateExample(w.word,d.pos,d.def).then(result=>{
-      if(result&&result.en){
-        saveExToFB(w.word,result.en,result.zh||'');
-        if(currentWord()?.word===w.word)showExampleHTML(area,result.en,result.zh||'');
-      }else area.innerHTML='';
+      if(result&&result.en){saveExToFB(w.word,result.en,result.zh||'');if(currentWord()?.word===w.word)showExampleHTML(area,result.en,result.zh||'');}
+      else area.innerHTML='';
     });
   }
 }
 
 function showExampleHTML(area,en,zh){
-  area.innerHTML=`
-    <div class="example-wrap">
-      <div class="example-label">例句</div>
-      <div class="example-en" id="ex-en-text">${en}</div>
-      <div class="example-zh" id="ex-zh-text">${zh||'（翻譯生成中）'}</div>
-      <span class="reveal-hint">hover / 點擊 查看中文翻譯</span>
-    </div>`;
-  const enEl=area.querySelector('.example-en');
-  const zhEl=area.querySelector('.example-zh');
-  const hint=area.querySelector('.reveal-hint');
+  area.innerHTML=`<div class="example-wrap">
+    <div class="example-label">例句</div>
+    <div class="example-en" id="ex-en-text">${en}</div>
+    <div class="example-zh" id="ex-zh-text">${zh||'（翻譯生成中）'}</div>
+    <span class="reveal-hint">hover / 點擊 查看中文翻譯</span>
+  </div>`;
+  const enEl=area.querySelector('.example-en'),zhEl=area.querySelector('.example-zh'),hint=area.querySelector('.reveal-hint');
   enEl.addEventListener('mouseenter',()=>{zhEl.classList.add('visible');hint.style.opacity='0';});
   enEl.addEventListener('mouseleave',()=>{zhEl.classList.remove('visible');hint.style.opacity='';});
-  enEl.addEventListener('click',e=>{
-    e.stopPropagation();
-    zhEl.classList.toggle('visible');
-    hint.style.opacity=zhEl.classList.contains('visible')?'0':'';
-  });
+  enEl.addEventListener('click',e=>{e.stopPropagation();zhEl.classList.toggle('visible');hint.style.opacity=zhEl.classList.contains('visible')?'0':'';});
 }
 
 function renderDone(){
@@ -519,27 +424,16 @@ function renderDone(){
   document.getElementById('progress-bar').style.width='100%';
   document.getElementById('progress-text').textContent=`${ALL_VOCAB.length} / ${ALL_VOCAB.length}`;
   document.getElementById('remaining-text').textContent='0 left';
-  drawGradient('TOEFL');
+  document.getElementById('img-gradient').style.background='linear-gradient(135deg,#667eea,#764ba2)';
+  document.getElementById('img-watermark').textContent='TOEFL';
+  document.getElementById('img-photo').classList.remove('show');
 }
 
-// ── Flip ──
-function handleCardClick(e){
-  if(e.target.closest('.example-en')||e.target.closest('.example-zh'))return;
-  flipCard();
-}
-function flipCard(){
-  isFlipped=!isFlipped;
-  document.getElementById('card').classList.toggle('flipped',isFlipped);
-  document.getElementById('actions').classList.toggle('visible',isFlipped);
-}
-function setFlip(s){
-  isFlipped=s;
-  document.getElementById('card').classList.toggle('flipped',s);
-  document.getElementById('actions').classList.toggle('visible',s);
-}
+function handleCardClick(e){if(e.target.closest('.example-en')||e.target.closest('.example-zh'))return;flipCard();}
+function flipCard(){isFlipped=!isFlipped;document.getElementById('card').classList.toggle('flipped',isFlipped);document.getElementById('actions').classList.toggle('visible',isFlipped);}
+function setFlip(s){isFlipped=s;document.getElementById('card').classList.toggle('flipped',s);document.getElementById('actions').classList.toggle('visible',s);}
 window.flipCard=flipCard;window.handleCardClick=handleCardClick;
 
-// ── Rate ──
 function rate(rating){
   if(!isFlipped)return;stats[rating]++;const total=queue.length;
   if(rating==='again'){const ci=queue[currentIdx];queue.splice(currentIdx,1);queue.splice(Math.min(currentIdx+2,queue.length),0,ci);}
@@ -550,7 +444,6 @@ function rate(rating){
 }
 window.rate=rate;
 
-// ── Keyboard ──
 document.addEventListener('keydown',e=>{
   if(e.repeat)return;const k=e.key;
   if(k===' '||k==='0'){e.preventDefault();flipCard();}
@@ -561,13 +454,11 @@ document.addEventListener('keydown',e=>{
   else if(k==='5'||k.toLowerCase()==='g')speakCurrent();
 });
 
-// ── Boot ──
 (async()=>{
   await loadExampleCache();
   const loaded=await loadState();
   if(!loaded&&!lsLoad())initQueue();
-  render();
-  listenRemote();
+  render();listenRemote();
   setSyncStatus('synced','已同步 ✓');
   const overlay=document.getElementById('loading');
   overlay.classList.add('hidden');
